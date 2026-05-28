@@ -1,0 +1,122 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import LogoutButton from "./LogoutButton";
+import type { Session } from "@/app/lib/auth";
+
+const navLinks = [
+  { href: "/", label: "Accueil" },
+  { href: "/about", label: "À propos" },
+  { href: "/blog", label: "Blog" },
+];
+
+const navLinksBlogger = [
+  { href: "/blog/create", label: "Créer un article" },
+  { href: "/profil", label: "Mon profil" },
+  { href: "/profil/edit", label: "Modifier mon profil" },
+];
+
+export default function Header({ session }: { session: Session | null }) {
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const user = session?.user;
+  const role = (user as { role?: string })?.role;
+
+  return (
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="font-bold text-xl text-gray-900 hover:text-gray-600 transition-colors">
+            Mon Blog
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-8">
+            {navLinks.map(({ href, label }) => (
+              <Link key={href} href={href}
+                className={`text-sm font-medium transition-colors hover:text-gray-900 ${pathname === href ? "text-gray-900 border-b-2 border-gray-900 pb-0.5" : "text-gray-500"}`}>
+                {label}
+              </Link>
+            ))}
+            {(role === "BLOGGER" || role === "ADMIN") && navLinksBlogger.map(({ href, label }) => (
+              <Link key={href} href={href}
+                className={`text-sm font-medium transition-colors hover:text-gray-900 ${pathname === href ? "text-gray-900 border-b-2 border-gray-900 pb-0.5" : "text-gray-500"}`}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Desktop auth */}
+          <div className="hidden md:flex items-center gap-3">
+            {user ? (
+              <>
+                <span className="text-sm text-gray-500">
+                  <span className="font-medium text-gray-900">@{(user as { pseudo?: string }).pseudo ?? user.name}</span>
+                  {" · "}
+                  <span className={role === "ADMIN" ? "text-red-600 font-medium" : "text-blue-600"}>
+                    {role === "ADMIN" ? "Admin" : "Blogueur"}
+                  </span>
+                </span>
+                <LogoutButton />
+              </>
+            ) : (
+              <>
+                <Link href="/signup"
+                  className={`text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${pathname === "/signup" ? "bg-gray-900 text-white border-gray-900" : "text-gray-700 border-gray-300 hover:border-gray-900 hover:text-gray-900"}`}>
+                  Inscription
+                </Link>
+                <Link href="/login"
+                  className={`text-sm font-medium px-4 py-2 rounded-lg transition-colors ${pathname === "/login" ? "bg-gray-700 text-white" : "bg-gray-900 text-white hover:bg-gray-700"}`}>
+                  Connexion
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <button className="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {menuOpen
+                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-gray-200 bg-white">
+          <nav className="flex flex-col px-4 py-3 gap-1">
+            {navLinks.map(({ href, label }) => (
+              <Link key={href} href={href} onClick={() => setMenuOpen(false)}
+                className={`text-sm font-medium px-3 py-2 rounded-md transition-colors ${pathname === href ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
+                {label}
+              </Link>
+            ))}
+            <div className="border-t border-gray-200 mt-2 pt-2 flex flex-col gap-1">
+              {user ? (
+                <div className="flex flex-col gap-2 px-3 py-2">
+                  <p className="text-sm text-gray-500">
+                    Connecté en tant que <span className="font-medium text-gray-900">@{(user as { pseudo?: string }).pseudo ?? user.name}</span>
+                  </p>
+                  <LogoutButton />
+                </div>
+              ) : (
+                <>
+                  <Link href="/signup" onClick={() => setMenuOpen(false)} className="text-sm font-medium px-3 py-2 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">Inscription</Link>
+                  <Link href="/login" onClick={() => setMenuOpen(false)} className="text-sm font-medium px-3 py-2 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">Connexion</Link>
+                </>
+              )}
+            </div>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}

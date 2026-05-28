@@ -1,0 +1,22 @@
+{
+    "authors": [
+        {
+            "id": 1,
+            "email": "john.doe@example.com",
+            "password": "password123",
+            "name": "John Doe",
+            "bio": "Software Engineer",
+            "avatar": "/images/avatar1.jpg",
+            "interests": ["Web Development", "AI"]
+        },
+        {
+            "id": 2,
+            "email": "jane.smith@example.com",
+            "password": "password123",
+            "name": "Jane Smith",
+            "bio": "Product Manager",
+            "avatar": "/images/avatar2.jpg",
+            "interests": ["Product Design", "User Research"]
+        }
+    ]
+}

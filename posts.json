@@ -1,0 +1,20 @@
+{
+    "posts": [
+        {
+            "id": 1,
+            "title": "First Post",
+            "date": "2023-01-01",
+            "author": 1,
+            "wysiwygContent": "<p>Hello World</p>",
+            "image": "/images/post1.jpg"
+        },
+        {
+            "id": 2,
+            "title": "Second Post",
+            "date": "2023-01-02",
+            "author": 2,
+            "wysiwygContent": "<p>Hello Again</p>",
+            "image": "/images/post2.jpg"
+        }
+    ]
+}

@@ -1,0 +1,108 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  BLOGGER
+  ADMIN
+}
+
+model Author {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  pseudo    String   @unique
+  password  String
+  name      String
+  bio       String
+  avatar    String
+  interests String[]
+  role      Role     @default(BLOGGER)
+  posts     Post[]
+}
+
+model SiteSetting {
+  key   String @id
+  value String
+}
+
+model Post {
+  id             Int      @id @default(autoincrement())
+  title          String
+  date           DateTime @default(now())
+  authorId       Int
+  author         Author   @relation(fields: [authorId], references: [id])
+  wysiwygContent String
+  image          String
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  pseudo        String
+  role          String   @default("BLOGGER")
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@unique([pseudo])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
