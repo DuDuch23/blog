@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import "react-quill-new/dist/quill.snow.css";
+import { saveAbout } from "@/app/actions/about";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
@@ -10,17 +11,20 @@ export default function AboutEditor({ initialContent }: { initialContent: string
   const [content, setContent] = useState(initialContent);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSave() {
     setSaving(true);
-    await fetch("/api/about", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
-    });
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setError("");
+    try {
+      await saveAbout(content);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setError("Erreur lors de la sauvegarde.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -43,6 +47,7 @@ export default function AboutEditor({ initialContent }: { initialContent: string
           {saving ? "Enregistrement…" : "Enregistrer"}
         </button>
         {saved && <span className="text-sm text-green-600">Contenu sauvegardé ✓</span>}
+        {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </div>
   );

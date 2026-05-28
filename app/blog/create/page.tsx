@@ -27,7 +27,11 @@ export default function CreatePostPage() {
     setError("");
 
     try {
-      await createPost({ title, wysiwygContent: content, image });
+      await createPost({
+        title,
+        wysiwygContent: content,
+        image
+      });
     } catch {
       setError("Une erreur est survenue.");
       setSubmitting(false);

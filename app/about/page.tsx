@@ -1,6 +1,9 @@
+export const revalidate = false;
+
 import { getSession } from "@/app/lib/session";
 import AboutEditor from "@/app/components/AboutEditor";
 import { prisma } from "@/app/lib/prisma";
+import parse from "html-react-parser";
 
 export default async function AboutPage() {
   const session = await getSession();
@@ -18,8 +21,9 @@ export default async function AboutPage() {
         ) : content ? (
           <div
             className="text-gray-700 leading-relaxed [&_p]:mb-4 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-gray-900"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
+          >
+            {parse(content)}
+          </div>
         ) : (
           <p className="text-gray-400 italic">Aucun contenu pour le moment.</p>
         )}

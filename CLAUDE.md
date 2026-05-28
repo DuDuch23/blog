@@ -13,7 +13,7 @@ npm run lint      # ESLint
 
 npx prisma generate               # regenerate client to app/generated/prisma/ (required after clone)
 npx prisma migrate dev --name X   # create + apply a new migration
-npx prisma migrate deploy         # apply existing migrations (no-op if none exist yet)
+npx prisma migrate deploy         # apply existing migrations (production)
 npx prisma db seed                # seed via tsx prisma/seed.ts
 ```
 
@@ -26,36 +26,66 @@ npx prisma db seed                   # inserts test data
 npm run dev
 ```
 
-Environment variables required (create `.env` manually — not committed): `DATABASE_URL`, `POSTGRES_URL`, `SESSION_SECRET`, `JWT_SECRET`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`.
+Environment variables required (create `.env` manually — not committed):
+- `DATABASE_URL` — Prisma migrations (supports `prisma+postgres://` for local dev server or standard `postgresql://`)
+- `POSTGRES_URL` — runtime client (`@prisma/adapter-pg`), must be a standard `postgres://` URL
+- `SESSION_SECRET` — HMAC key for the custom JWT cookie
+- `JWT_SECRET` — HMAC key for the API JWT routes
+- `BETTER_AUTH_SECRET` — required by better-auth even if unused for login
+- `BETTER_AUTH_URL` — e.g. `http://localhost:3000/`
+
+**Note:** If using Prisma's local dev server (`prisma+postgres://`), run `npx prisma dev` in a separate terminal before migrations or seeding. For Docker or standard Postgres, a plain `postgresql://` URL works for both variables.
 
 ## Architecture
 
 Next.js 16 App Router blog. Stack: Prisma 7 + PostgreSQL, Tailwind CSS v4, React 19.
 
-### Two parallel auth systems (important)
+### Auth system
 
-The codebase has two auth systems that coexist and are **not interchangeable**:
+The codebase originally had two auth systems; only the **custom JWT + cookie session** is active:
 
-1. **better-auth** (`app/lib/auth.ts`, `app/lib/auth-client.ts`) — mounted at `/api/auth/[...all]/route.ts`. Used in `app/layout.tsx` to get the session for the `<Header>`. Manages its own `User`, `Session`, `Account`, `Verification` tables.
+- **`app/lib/session.ts`** (`server-only`) — signs/verifies a JWT stored in an `httpOnly` cookie named `session`. Exports `getSession()`, `createSession()`, `deleteSession()`.
+- **`app/lib/jwt.ts`** — separate JWT utility used by `/api/auth/login` and `/api/auth/register` API routes (returns tokens as JSON, no cookie).
+- **`app/actions/auth.ts`** — `login()` Server Action (used by `/login` page) and `logout()`.
+- **better-auth** (`app/lib/auth.ts`, `app/lib/auth-client.ts`, `/api/auth/[...all]`) — still present but unused for login/logout. Do not use `signIn`/`signOut`/`useSession` from auth-client in new code.
 
-2. **Custom JWT + cookie session** (`app/lib/jwt.ts`, `app/lib/session.ts`) — used by Server Actions (`app/actions/auth.ts`, `app/actions/post.ts`) and the API routes `/api/auth/login` and `/api/auth/register`. Stores a signed JWT in an `httpOnly` cookie named `session`. `app/lib/session.ts` is `server-only`.
+`getSession()` is the authorization chokepoint for all Server Actions and protected pages.
 
-These operate on different user tables: better-auth uses `User`; the custom system uses `Author`. When adding auth-gated features, check which system the surrounding code uses before calling session utilities.
+### Data models (`prisma/schema.prisma`)
 
-### Data models
+- **`Author`** — the active user model. Has `id`, `email`, `pseudo`, `password` (plaintext), `name`, `bio`, `avatar`, `interests[]`, `role (BLOGGER|ADMIN)`, `posts[]`. Used by all blog logic.
+- **`Post`** — belongs to `Author`. Has `title`, `date`, `wysiwygContent` (HTML from Quill), `image` (URL).
+- **`SiteSetting`** — key/value store. Currently used for `about_content`.
+- **`User`/`Session`/`Account`/`Verification`** — better-auth tables, not used by blog logic.
 
-Two distinct user-like models in `prisma/schema.prisma`:
-- `Author` — used by the custom auth system and all blog content (has `posts`, `role: BLOGGER|ADMIN`)
-- `User` / `Session` / `Account` / `Verification` — managed by better-auth
+Prisma client generated to `app/generated/prisma/` (non-default). Import via `@/app/lib/prisma`.
 
-`Post` belongs to `Author` (not `User`). `SiteSetting` is a key/value store for site-wide config.
+### Pages and rendering strategy
 
-The Prisma client is generated to `app/generated/prisma/` (non-default). Import from there or via `@/app/lib/prisma`.
+| Route | Type | Rendering |
+|---|---|---|
+| `/` | Server Component | Dynamic |
+| `/blog` | Server Component | ISR on-demand (`revalidate = false`) |
+| `/blog/[id]` | Server Component | ISR on-demand, revalidated on create/edit |
+| `/blog/create` | Client Component | Dynamic |
+| `/blog/edit/[id]` | Server Component (shell) + Client form | Dynamic |
+| `/about` | Server Component | ISR on-demand (`revalidate = false`) |
+| `/login` | Client Component | Dynamic |
+| `/signup` | Client Component | Dynamic |
+| `/profil` | Server Component | Dynamic (auth-gated) |
+| `/profil/edit` | Server Component (shell) + Client form | Dynamic (auth-gated) |
+
+### Server Actions (`app/actions/`)
+
+- **`auth.ts`** — `login(state, formData)`, `logout()`. Used by `/login` and `LogoutButton`.
+- **`post.ts`** — `createPost(data)`, `editPost(data)`. Both call `revalidatePath` after mutation. `editPost` checks that the caller is the post's author or ADMIN.
+- **`about.ts`** — `saveAbout(content)`. ADMIN only. Calls `revalidatePath('/about')`.
+- **`profile.ts`** — `updateProfile(state, formData)`. Updates `name`, `bio`, `avatar`, `interests`. Calls `revalidatePath('/profil')`.
 
 ### Key conventions
 
-- Server Actions are in `app/actions/` and are marked `'use server'`. They call `getSession()` from `app/lib/session.ts` for auth checks.
-- API routes under `app/api/auth/login` and `app/api/auth/register` use `signToken()` from `app/lib/jwt.ts` and operate on the `Author` model directly.
-- `getSession()` (from `app/lib/session.ts`) is the authorization chokepoint for Server Actions — it is server-only and reads the `session` cookie.
-- `authClient` (from `app/lib/auth-client.ts`) exposes `signIn`, `signUp`, `signOut`, `useSession` for client components via better-auth.
-- Rich text posts use `react-quill-new`; the content is stored as HTML in `Post.wysiwygContent`.
+- Protected pages call `getSession()` at the top and `redirect('/login')` if null.
+- Role-gated logic: `session.role === 'ADMIN'` or `session.role === 'BLOGGER'`.
+- ISR invalidation is on-demand only — no time-based revalidation. `revalidatePath` is called inside Server Actions after every mutation.
+- Rich text editor: `react-quill-new` loaded with `dynamic(..., { ssr: false })`. Content stored as HTML in `Post.wysiwygContent`.
+- Client forms that call Server Actions use `useActionState` + `useEffect` on `{ success: true }` for navigation (not `redirect()` inside the action).

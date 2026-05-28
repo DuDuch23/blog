@@ -4,26 +4,39 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import LogoutButton from "./LogoutButton";
-import type { Session } from "@/app/lib/auth";
+import type { SessionData } from "@/app/lib/session";
 
 const navLinks = [
-  { href: "/", label: "Accueil" },
-  { href: "/about", label: "À propos" },
-  { href: "/blog", label: "Blog" },
+  {
+    href: "/",
+    label: "Accueil"
+  },
+  {
+    href: "/about",
+    label: "À propos"
+  },
+  {
+    href: "/blog",
+    label: "Blog"
+  },
 ];
 
 const navLinksBlogger = [
-  { href: "/blog/create", label: "Créer un article" },
-  { href: "/profil", label: "Mon profil" },
-  { href: "/profil/edit", label: "Modifier mon profil" },
+  {
+    href: "/blog/create",
+    label: "Créer un article"
+  },
+  {
+    href: "/profil",
+    label: "Mon profil"
+  }
 ];
 
-export default function Header({ session }: { session: Session | null }) {
+export default function Header({ session }: { session: SessionData | null }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const user = session?.user;
-  const role = (user as { role?: string })?.role;
+  const role = session?.role;
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -52,10 +65,10 @@ export default function Header({ session }: { session: Session | null }) {
 
           {/* Desktop auth */}
           <div className="hidden md:flex items-center gap-3">
-            {user ? (
+            {session ? (
               <>
                 <span className="text-sm text-gray-500">
-                  <span className="font-medium text-gray-900">@{(user as { pseudo?: string }).pseudo ?? user.name}</span>
+                  <span className="font-medium text-gray-900">@{session.pseudo}</span>
                   {" · "}
                   <span className={role === "ADMIN" ? "text-red-600 font-medium" : "text-blue-600"}>
                     {role === "ADMIN" ? "Admin" : "Blogueur"}
@@ -100,10 +113,10 @@ export default function Header({ session }: { session: Session | null }) {
               </Link>
             ))}
             <div className="border-t border-gray-200 mt-2 pt-2 flex flex-col gap-1">
-              {user ? (
+              {session ? (
                 <div className="flex flex-col gap-2 px-3 py-2">
                   <p className="text-sm text-gray-500">
-                    Connecté en tant que <span className="font-medium text-gray-900">@{(user as { pseudo?: string }).pseudo ?? user.name}</span>
+                    Connecté en tant que <span className="font-medium text-gray-900">@{session.pseudo}</span>
                   </p>
                   <LogoutButton />
                 </div>

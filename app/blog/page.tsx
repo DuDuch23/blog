@@ -1,27 +1,13 @@
-'use client'
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import { prisma } from '@/app/lib/prisma';
 
-type Post = {
-  id: number;
-  title: string;
-  date: string;
-  author: { name: string; pseudo: string };
-  wysiwygContent: string;
-  image: string;
-}
+export const revalidate = false;
 
-export default function BlogPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const response = await fetch('/api/posts');
-      const data: { posts: Post[] } = await response.json();
-      setPosts(data.posts);
-    };
-    fetchPosts();
-  }, []);
+export default async function BlogPage() {
+  const posts = await prisma.post.findMany({
+    include: { author: { select: { name: true, pseudo: true } } },
+    orderBy: { date: 'desc' },
+  });
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-6 py-12">
