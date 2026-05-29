@@ -1,6 +1,18 @@
+import type { Metadata } from "next";
+import { getSession } from "@/app/lib/session";
+
 export const revalidate = false;
 
-import { getSession } from "@/app/lib/session";
+export const metadata: Metadata = {
+  title: "À propos",
+  description: "En savoir plus sur ce blog et son auteur.",
+  openGraph: {
+    title: "À propos | Mon Blog",
+    description: "En savoir plus sur ce blog et son auteur.",
+    url: "/about",
+    type: "website",
+  },
+};
 import AboutEditor from "@/components/AboutEditor";
 import { prisma } from "@/app/lib/prisma";
 import parse from "html-react-parser";

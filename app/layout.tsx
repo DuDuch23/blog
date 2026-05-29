@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mon Blog",
-  description: "Un blog Next.js avec Prisma et Better Auth",
+  title: {
+    template: '%s | Mon Blog',
+    default: 'Mon Blog',
+  },
+  description: "Un blog sur le développement web, la tech et bien plus encore.",
 };
 
 export default function RootLayout({

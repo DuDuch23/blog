@@ -1,4 +1,16 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Accueil',
+  description: 'Découvrez des articles sur le développement web, la tech et bien plus encore.',
+  openGraph: {
+    title: 'Accueil | Mon Blog',
+    description: 'Découvrez des articles sur le développement web, la tech et bien plus encore.',
+    url: '/',
+    type: 'website',
+  },
+};
 import Search from '@/components/Search';
 import Table from '@/components/Table';
 import Pagination from '@/components/Pagination';

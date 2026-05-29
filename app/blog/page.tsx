@@ -1,5 +1,17 @@
 import Link from 'next/link';
 import { prisma } from '@/app/lib/prisma';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Blog',
+  description: 'Tous les articles',
+  openGraph: {
+    title: 'Blog',
+    description: 'Tous les articles',
+    url: '/blog',
+    type: 'website',
+  },
+};
 
 export const revalidate = false;
 

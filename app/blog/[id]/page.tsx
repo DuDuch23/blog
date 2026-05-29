@@ -3,6 +3,39 @@ import { getSession } from "@/app/lib/session";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import parse from "html-react-parser";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+
+  const post = await prisma.post.findUnique({
+    where: {
+      id: Number(id)
+    },
+    include: {
+      author: true
+    },
+  });
+
+  if (!post) notFound();
+
+  const description = post.wysiwygContent.replace(/<[^>]+>/g, '').slice(0, 160);
+
+  return {
+    title: post.title,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      url: `/blog/${post.id}`,
+      type: 'article',
+      images: post.image ? [post.image] : [],
+      publishedTime: post.date.toISOString(),
+      modifiedTime: post.date.toISOString(),
+      authors: [post.author.name],
+    },
+  };
+}
 
 export const revalidate = false;
 
