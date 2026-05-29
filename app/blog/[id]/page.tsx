@@ -38,8 +38,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-export const revalidate = false;
-
 export default async function SinglePostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
