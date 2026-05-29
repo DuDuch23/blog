@@ -47,7 +47,9 @@ export async function editPost(data: {
   }
 
   const post = await prisma.post.update({
-    where: { id: data.id },
+    where: {
+      id: data.id
+    },
     data: {
       title: data.title,
       wysiwygContent: data.wysiwygContent,
@@ -58,4 +60,25 @@ export async function editPost(data: {
   revalidatePath('/blog')
   revalidatePath(`/blog/${post.id}`)
   redirect(`/blog/${post.id}`)
+}
+
+export async function deletePost(id: number) {
+  const session = await getSession()
+  if (!session) redirect('/login')
+
+  const existing = await prisma.post.findUnique({
+    where: { id },
+    select: { authorId: true },
+  })
+  if (!existing) redirect('/blog')
+  if (existing.authorId !== Number(session.userId) && session.role !== 'ADMIN') {
+    redirect('/blog')
+  }
+
+  await prisma.post.delete({
+    where: { id }
+  })
+
+  revalidatePath('/blog')
+  redirect('/blog')
 }

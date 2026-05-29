@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import parse from "html-react-parser";
 import type { Metadata } from "next";
+import { deletePost } from "@/app/actions/post";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -68,13 +69,24 @@ export default async function SinglePostPage({ params }: { params: Promise<{ id:
             </p>
             <h1 className="text-3xl font-bold text-gray-900">{post.title}</h1>
           </div>
+
           {canEdit && (
-            <Link
-              href={`/blog/edit/${post.id}`}
-              className="flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors"
-            >
-              Modifier
-            </Link>
+            <div className="flex gap-2 flex-shrink-0">
+              <Link
+                href={`/blog/edit/${post.id}`}
+                className="text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-colors"
+              >
+                Modifier
+              </Link>
+              <form action={deletePost.bind(null, post.id)}>
+                <button
+                  type="submit"
+                  className="text-sm font-medium px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:border-red-500 hover:bg-red-50 transition-colors"
+                >
+                  Supprimer
+                </button>
+              </form>
+            </div>
           )}
         </div>
 

@@ -3,7 +3,11 @@ import { prisma } from "@/app/lib/prisma";
 
 export async function GET() {
   const posts = await prisma.post.findMany({
-    include: { author: { select: { id: true, name: true, pseudo: true } } },
+    include: {
+      author: {
+        select: { id: true, name: true, pseudo: true },
+      },
+    },
     orderBy: { date: "desc" },
   });
   return NextResponse.json({ posts });
