@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
-import Search from '@/app/components/Search';
-import Table from '@/app/components/Table';
-import Pagination from '@/app/components/Pagination';
-import PostsSkeleton from '@/app/components/PostsSkeleton';
+import Search from '@/components/Search';
+import Table from '@/components/Table';
+import Pagination from '@/components/Pagination';
+import PostsSkeleton from '@/components/PostsSkeleton';
 import { fetchPostsPages } from '@/app/lib/data';
 
 export default async function Home(props: {

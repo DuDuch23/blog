@@ -1,7 +1,7 @@
 import { getSession } from "@/app/lib/session";
 import { prisma } from "@/app/lib/prisma";
 import { redirect } from "next/navigation";
-import ProfileForm from "@/app/components/ProfileForm";
+import ProfileForm from "@/components/ProfileForm";
 
 export default async function EditProfilPage() {
   const session = await getSession();

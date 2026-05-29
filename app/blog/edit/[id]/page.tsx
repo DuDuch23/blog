@@ -1,7 +1,7 @@
 import { getSession } from "@/app/lib/session";
 import { prisma } from "@/app/lib/prisma";
 import { redirect, notFound } from "next/navigation";
-import EditPostForm from "@/app/components/EditPostForm";
+import EditPostForm from "@/components/EditPostForm";
 
 export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

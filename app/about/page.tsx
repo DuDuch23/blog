@@ -1,7 +1,7 @@
 export const revalidate = false;
 
 import { getSession } from "@/app/lib/session";
-import AboutEditor from "@/app/components/AboutEditor";
+import AboutEditor from "@/components/AboutEditor";
 import { prisma } from "@/app/lib/prisma";
 import parse from "html-react-parser";
 
