@@ -2,6 +2,7 @@ import { getSession } from "@/app/lib/session";
 import { prisma } from "@/app/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { deletePost } from "@/app/actions/post";
 
 export default async function ProfilPage() {
   const session = await getSession();
@@ -130,6 +131,14 @@ export default async function ProfilPage() {
                     >
                       Modifier
                     </Link>
+                    <form action={deletePost.bind(null, post.id)}>
+                      <button
+                        type="submit"
+                        className="text-sm font-medium px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:border-red-500 hover:bg-red-50 transition-colors"
+                      >
+                        Supprimer
+                      </button>
+                    </form>
                   </div>
                 </li>
               ))}
