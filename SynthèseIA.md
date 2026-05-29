@@ -1,7 +1,7 @@
 # Utilisation de l'ia
 
 ## Pourquoi je l'ai utilisé
-Je ne l'ai pas utilisé au début pour voir ce que j'avais compris et ce que j'étais capable de faire après l'aprentissage de nextjs. Je l'ai ensuite utilisé lorsque je voulais peaufiner du code, m'aider à faire du code redondant, me conseiller sur quoi utilisé comme plugin (comme React Qwuill pour le bloc wysiwyg).
+Je ne l'ai pas utilisé au début pour voir ce que j'avais compris et ce que j'étais capable de faire après l'aprentissage de nextjs. Je l'ai ensuite utilisé lorsque je voulais peaufiner du code, m'aider à faire du code redondant, me conseiller sur quoi utilisé comme plugin (comme React Qwuill pour le bloc wysiwyg). J'ai quand même essayé de l'utilisé un minimum en utilisant les docs dans un premier temps
 
 ## J'ai utilisé l'ia pour:
 - lorsque je suivais une doc et qui manquait quelque chose
